@@ -146,6 +146,8 @@ function runTest(mode, property, shouldForce3D, opaque) {
 
     createBoxes();
 
+    fpsChart.installIntervalTimer()
+
     window.setTimeout((function() {
         gStartTime = (((new Date).getTime()) / 1000.0);
 
@@ -160,6 +162,8 @@ function runTest(mode, property, shouldForce3D, opaque) {
 function endTest(frames, elapsedTime) {
     //document.getElementById("output").innerHTML += "" +  frames + " / " + elapsedTime + " = " + (frames/elapsedTime) + "<br>";
     runNextTest();
+
+//    fpsChart.removeIntervalTimer()
 }
 
 function kickoffTransition() {
@@ -183,8 +187,10 @@ function heartbeat() {
     }
 
     if(currentTime < kTestDuration) {
+        fpsChart.markNewFrame()
         window.requestAnimFrame(heartbeat);
     } else {
+        fpsChart.markEndOfFrames()
         endTest(gFrameCount, currentTime);
     }
 }
@@ -256,4 +262,20 @@ function createBoxes() {
         <div id = "description"></div>
 
     </body>
+
+<!-- script src="http://d3js.org/d3.v3.min.js" charset="utf-8"></script -->
+<script src="d3.v3.js" charset="utf-8"></script>
+<script src="fps-meter.js" charset="utf-8"></script>
+<script type="text/javascript">
+    var fpsChart = new fps()
+
+    // chain-load the FPS timer functions
+    oldLoadFunction = window.onload
+    window.onload = function() {
+        if (oldLoadFunction)
+            oldLoadFunction()
+
+        document.body.appendChild(fpsChart.createFrameTimeChart());
+    }
+</script>
 <html>
