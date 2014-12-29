@@ -117,7 +117,9 @@ function runNextTest() {
     var testInfo = kTestsMatrix[gCurrentTestIndex];
 
     if(gCurrentTestIndex < kTestsMatrix.length) {
-        document.getElementById("output").innerHTML += "" + gCurrentTestIndex + " ";
+        document.getElementById("description").innerHTML =
+            "DOM prop\ert\y          : " + testInfo.property + "<br>" +
+            "forcing \"3D\" transform: " + testInfo.shouldForce3D;
         runTest(testInfo.mode, testInfo.property, testInfo.shouldForce3D, testInfo.opaque);
     }
 
@@ -251,7 +253,7 @@ function createBoxes() {
 
         <div id = "container"></div>
 
-        <div id = "output"></div>
+        <div id = "description"></div>
 
     </body>
 <html>
