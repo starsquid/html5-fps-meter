@@ -127,6 +127,9 @@ function runNextTest() {
         gCurrentTestIteration = 0;
         gCurrentTestIndex += 1;
     }
+    if(gCurrentTestIndex >= kTestsMatrix.length) {
+        gCurrentTestIndex = 0;
+    }
 }
 
 function runTest(mode, property, shouldForce3D, opaque) {
