@@ -13,8 +13,8 @@ Copyright (c) 2013 Tumult Inc.
         <style>
 
             #container {
-                width: 800px;
-                height: 600px;
+                width: 1280px;
+                height: 720px;
                 position: relative;
             }
 
@@ -72,12 +72,12 @@ var kBrowserInfo = (function () {
     return b;
 }());
 
-var kTotalBoxCount = 2000;
-var kBoxWidth = 100;
-var kBoxHeight = 100;
-var kContainerWidth = 800;
-var kContainerHeight = 600;
-var kTestDuration = 10.0;
+var kTotalBoxCount = 800;
+var kBoxWidth  = 64;
+var kBoxHeight = 64;
+var kContainerWidth = 1280;
+var kContainerHeight = 720;
+var kTestDuration = 5.0;
 var kMaxTestIterations = 1;
 
 var kTransformName = "transform";
@@ -102,22 +102,10 @@ var gCurrentTestIteration = 0;
 //
 
 var kTestsMatrix = [
-                    { "mode" : "javascript", "property" : "topleft", "shouldForce3D" : true, "opaque" : true },
-                    { "mode" : "javascript", "property" : "topleft", "shouldForce3D" : false, "opaque" : true },
-                    { "mode" : "javascript", "property" : "translate", "shouldForce3D" : true, "opaque" : true },
-                    { "mode" : "javascript", "property" : "translate", "shouldForce3D" : false, "opaque" : true },
-                    { "mode" : "transition", "property" : "topleft", "shouldForce3D" : true, "opaque" : true },
-                    { "mode" : "transition", "property" : "topleft", "shouldForce3D" : false, "opaque" : true },
-                    { "mode" : "transition", "property" : "translate", "shouldForce3D" : false, "opaque" : true },
-                    { "mode" : "transition", "property" : "translate", "shouldForce3D" : true, "opaque" : true },
                     { "mode" : "javascript", "property" : "topleft", "shouldForce3D" : true, "opaque" : false },
                     { "mode" : "javascript", "property" : "topleft", "shouldForce3D" : false, "opaque" : false },
                     { "mode" : "javascript", "property" : "translate", "shouldForce3D" : true, "opaque" : false },
                     { "mode" : "javascript", "property" : "translate", "shouldForce3D" : false, "opaque" : false },
-                    { "mode" : "transition", "property" : "topleft", "shouldForce3D" : true, "opaque" : false },
-                    { "mode" : "transition", "property" : "topleft", "shouldForce3D" : false, "opaque" : false },
-                    { "mode" : "transition", "property" : "translate", "shouldForce3D" : false, "opaque" : false },
-                    { "mode" : "transition", "property" : "translate", "shouldForce3D" : true, "opaque" : false },
 
                 ];
 
@@ -161,7 +149,7 @@ function runTest(mode, property, shouldForce3D, opaque) {
         } else if(gTestMode == "javascript") {
             window.requestAnimFrame(heartbeat);
         }
-    }), 2000);
+    }), 250);
 }
 
 function endTest(frames, elapsedTime) {
