@@ -28,6 +28,7 @@ function fps() {
 
     blockList = {
         // list of blocks that no longer need processing
+        // all blocks in this list must have frameTimeData.length > 0
         finishedBlocks: [],
         // currentBlock must always exist
         currentBlock: new block(),
@@ -41,7 +42,7 @@ function fps() {
             this.currentBlock = new block()
         },
 
-        getAllData: function() {
+        getAllDataRaw: function() {
             var allData = []
             this.finishedBlocks.forEach(
                 function(d) { allData = allData.concat(d.frameTimeData) } )
@@ -52,7 +53,7 @@ function fps() {
         getAllDataBounded: function() {
             var allDataBounded = []
 
-            this.getAllData().forEach(
+            this.getAllDataRaw().forEach(
                 function(d) {
                     allDataBounded.push({xcoord: d.startTime, ycoord: d.endTime - d.startTime});
                     allDataBounded.push({xcoord: d.endTime,   ycoord: d.endTime - d.startTime});
@@ -99,7 +100,8 @@ function fps() {
 
         divContainer: null,
         svg: null,
-        svg_y: null,
+        svgY: null,
+        svgXMap: {},
 
         createDivContainer: function() {
             this.divContainer = document.createElement('div')
@@ -108,6 +110,7 @@ function fps() {
                 "position: absolute; " +
                 "z-index: 2000; " +
                 "background: black; " +
+                "display: block; left: 240px; top: 720px; " +
                 "width: " + this.width + "; " +
                 "height: " + this.height + "; " +
                 "")
@@ -130,49 +133,103 @@ function fps() {
                 .attr("style", "fill: none")
 
             // add y-axis
-            this.svg_y = this.svg.append("g")
+            this.svgY = this.svg.append("g")
+                .attr("style", "stroke: white; fill: white; font-family: Avenir, Arial, arial, sans-serif")
+                .attr("transform", "translate(806,0)")
         },
 
         refresh: function() {
             // collate existing data together
-            // TODO: render each line/section independently?
             var completeFrameTimeData = blockList.getAllDataBounded()
 
-            // pre-compute maximum frame time, so we can scale the chart's Y-axis
-            yAxisMax = Math.max.apply(null,
-                    completeFrameTimeData.map(function(d) { return d.endTime - d.startTime; } ))
 
-            // X-axis scaling: from 10 seconds ago to now
-            xScale = d3.scale.linear()
-                .domain([Date.now() - 10 * 1000, Date.now()])
-                .range([0, chart.width - 40]);
+            // y-axis labeling + scaling
+            //---------------------------------------------------------
+            // pre-compute maximum frame time, so we can scale the chart's Y-axis
+            yDataMax = Math.max.apply(null,
+                    completeFrameTimeData.map(function(d) { return 1000/d.ycoord; } ))
+            yAxisMax = 1.1 * yDataMax
+            // clamp value to 70 FPS
+            yAxisMax = Math.max(70, yAxisMax)
+
             // Y-axis scaling: from 0 to max frame time * 1.2
             yScale = d3.scale.linear()
-                .domain([0, 70])
+                .domain([0, yAxisMax])
                 .range([chart.height, 0]);
-
-            dataLine = d3.svg.line()
-                .x( function(d) { return xScale(d.xcoord); } )
-                .y( function(d) { return yScale(1000/(d.ycoord)); } )
-
-            // add data (plotline)
-            vis = d3.select(this.divContainer).selectAll('svg')
-            var newData = vis.selectAll('path')
-                .data([completeFrameTimeData])
-            newData
-                .attr("d", dataLine)
-                .attr("stroke", "#0f0")
-                .attr("stroke-width", "1px")
-                .exit().remove()
 
             // add axis scaling
             var yAxis = d3.svg.axis()
                 .scale(yScale)
                 .orient("left")
-                .tickValues([30, 60])
-            this.svg_y.call(yAxis)
-                .attr("style", "stroke: white; fill: white; font-family: Avenir, Arial, arial, sans-serif")
-                .attr("transform", "translate(800,0)")
+            // if data is reasonable (within 120 FPS range), set axis
+            if (yAxisMax < 120) {
+                yAxis.tickValues([30, 60, 90, 120])
+            }
+            else {
+                yAxis.ticks(3)
+            }
+
+            this.svgY.call(yAxis)
+
+
+            // x-axis labeling + scaling
+            //---------------------------------------------------------
+            // X-axis scaling: from 10 seconds ago to now
+            xScale = d3.scale.linear()
+                .domain([Date.now() - 5 * 1000, Date.now()])
+                .range([0, chart.width - 40]);
+
+            // draw x-axis labeling (average FPS for each block)
+            var t = this
+            blockList.finishedBlocks.forEach(function(d) {
+                var blockInfo = t.svgXMap[d.frameTimeData[0].startTime]
+
+                // if block does not have an entry, create it
+                if (!blockInfo) {
+                    blockInfo = {}
+                    blockInfo.label = t.svg.append("g")
+                    blockInfo.label.append("text")
+                        .attr("style", "stroke: white; fill: white; font-family: Avenir, Arial, arial, sans-serif")
+
+                    // compute the "average" time, position to display the label
+                    blockInfo.labelTime =
+                        (d.frameTimeData[0].startTime +
+                        d.frameTimeData[d.frameTimeData.length - 1].endTime)
+                        / 2
+
+                    // compute the average frame time for this block
+                    blockInfo.averageFrameTime =
+                        d.frameTimeData.reduce(function(previous, current) {
+                            return previous + (current.endTime - current.startTime)
+                        }, 0)
+                        / d.frameTimeData.length
+
+                    // done, add info object to map
+                    t.svgXMap[d.frameTimeData[0].startTime] = blockInfo
+                }
+
+                // update the corresponding entry
+                blockInfo.label
+                    .attr("transform", "translate(" + xScale(blockInfo.labelTime) + "," + 20 + ")")
+                blockInfo.label.select("text").text("" + Number(1000/blockInfo.averageFrameTime).toFixed(2) + " FPS")
+            })
+            // clear out old labels, once size gets too big
+
+
+            // actual data (plotline)
+            //---------------------------------------------------------
+            dataLine = d3.svg.line()
+                .x( function(d) { return xScale(d.xcoord); } )
+                .y( function(d) { return yScale(1000/(d.ycoord)); } )
+
+            vis = d3.select(this.divContainer).selectAll('svg')
+            var newData = vis.selectAll('path')
+                .data([completeFrameTimeData])
+                .attr("d", dataLine)
+                .attr("stroke", "#0f0")
+                .attr("stroke-width", "1px")
+                .exit().remove()
+
         }
     }
 
