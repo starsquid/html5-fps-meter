@@ -118,7 +118,7 @@ function fps() {
             return this.divContainer
         },
 
-        createSvgLine: function() {
+        createSvgObject: function() {
             // create and add data to the chart
             this.svg = d3.select(this.divContainer)
                 .append('svg')
@@ -136,6 +136,14 @@ function fps() {
             this.svgY = this.svg.append("g")
                 .attr("style", "stroke: white; fill: white; font-family: Avenir, Arial, arial, sans-serif")
                 .attr("transform", "translate(806,0)")
+
+            // add chevron styling (for static screenshots)
+            //---------------------------------------------------------
+            var arrow = this.svg.append("g")
+            arrow.append("text")
+                .attr("style", "stroke: #00ff00; fill: #00ff00; font-family: Avenir, Arial, arial, sans-serif; font-size: 72px")
+                .attr("transform", "translate(720,110)")
+                .text("«")
         },
 
         refresh: function() {
@@ -229,7 +237,6 @@ function fps() {
                 .attr("stroke", "#0f0")
                 .attr("stroke-width", "1px")
                 .exit().remove()
-
         }
     }
 
@@ -275,7 +282,7 @@ fps.prototype = {
     //-----------------------------------------------------------------
     createFrameTimeChart: function() {
         container = chart.createDivContainer()
-        chart.createSvgLine()
+        chart.createSvgObject()
         chart.refresh()
 
         return container
