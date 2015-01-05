@@ -72,12 +72,12 @@ var kBrowserInfo = (function () {
     return b;
 }());
 
-var kTotalBoxCount = 800;
-var kBoxWidth  = 64;
-var kBoxHeight = 64;
+var kTotalBoxCount = 20;
+var kBoxWidth  = 128;
+var kBoxHeight = 128;
 var kContainerWidth = 1280;
 var kContainerHeight = 720;
-var kTestDuration = 5.0;
+var kTestDuration = 2.5;
 var kMaxTestIterations = 1;
 
 var kTransformName = "transform";
@@ -117,9 +117,9 @@ function runNextTest() {
     var testInfo = kTestsMatrix[gCurrentTestIndex];
 
     if(gCurrentTestIndex < kTestsMatrix.length) {
-        document.getElementById("description").innerHTML =
-            "DOM prop\ert\y          : " + testInfo.property + "<br>" +
-            "forcing \"3D\" transform: " + testInfo.shouldForce3D;
+        //document.getElementById("description").innerHTML =
+        //    "DOM prop\ert\y          : " + testInfo.property + "<br>" +
+        //    "forcing \"3D\" transform: " + testInfo.shouldForce3D;
         runTest(testInfo.mode, testInfo.property, testInfo.shouldForce3D, testInfo.opaque);
     }
 
@@ -146,8 +146,6 @@ function runTest(mode, property, shouldForce3D, opaque) {
 
     createBoxes();
 
-    fpsChart.installIntervalTimer()
-
     window.setTimeout((function() {
         gStartTime = (((new Date).getTime()) / 1000.0);
 
@@ -156,14 +154,12 @@ function runTest(mode, property, shouldForce3D, opaque) {
         } else if(gTestMode == "javascript") {
             window.requestAnimFrame(heartbeat);
         }
-    }), 250);
+    }), 20);
 }
 
 function endTest(frames, elapsedTime) {
     //document.getElementById("output").innerHTML += "" +  frames + " / " + elapsedTime + " = " + (frames/elapsedTime) + "<br>";
     runNextTest();
-
-//    fpsChart.removeIntervalTimer()
 }
 
 function kickoffTransition() {
@@ -187,10 +183,8 @@ function heartbeat() {
     }
 
     if(currentTime < kTestDuration) {
-        fpsChart.markNewFrame()
         window.requestAnimFrame(heartbeat);
     } else {
-        fpsChart.markEndOfFrames()
         endTest(gFrameCount, currentTime);
     }
 }
@@ -259,7 +253,7 @@ function createBoxes() {
 
         <div id = "container"></div>
 
-        <div id = "description"></div>
+        <div id = "description">HTML5 JS animation test</div>
 
     </body>
 
@@ -276,6 +270,15 @@ function createBoxes() {
             oldLoadFunction()
 
         document.body.appendChild(fpsChart.createFrameTimeChart());
+
+        fpsChart.installIntervalTimer()
     }
+
+     // add it to the RAF queue
+    function step(timestamp) {
+        fpsChart.markNewFrame()
+        window.requestAnimationFrame(step)
+    }
+    window.requestAnimationFrame(step)
 </script>
 <html>
