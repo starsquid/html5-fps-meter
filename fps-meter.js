@@ -109,7 +109,7 @@ function fps() {
             this.divContainer.setAttribute("style",
                 "position: absolute; " +
                 "z-index: 2000; " +
-                "background: black; " +
+                "background: #000000; " +
                 "display: block; left: 240px; top: 720px; " +
                 "width: " + this.width + "; " +
                 "height: " + this.height + "; " +
@@ -131,6 +131,8 @@ function fps() {
                 .enter().append("path")
                 .attr("d", d3.svg.line())
                 .attr("style", "fill: none")
+                .attr("stroke", "#80c0ff")
+                .attr("stroke-width", "2px")
 
             // add y-axis
             this.svgY = this.svg.append("g")
@@ -141,7 +143,7 @@ function fps() {
             //---------------------------------------------------------
             var arrow = this.svg.append("g")
             arrow.append("text")
-                .attr("style", "stroke: #00ff00; fill: #00ff00; font-family: Avenir, Arial, arial, sans-serif; font-size: 72px")
+                .attr("style", "stroke: #80c0ff; fill: #80c0ff; font-family: Avenir, Arial, arial, sans-serif; font-size: 72px")
                 .attr("transform", "translate(720,110)")
                 .text("«")
         },
@@ -234,8 +236,6 @@ function fps() {
             var newData = vis.selectAll('path')
                 .data([completeFrameTimeData])
                 .attr("d", dataLine)
-                .attr("stroke", "#0f0")
-                .attr("stroke-width", "1px")
                 .exit().remove()
         }
     }
